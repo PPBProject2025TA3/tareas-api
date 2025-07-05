@@ -27,7 +27,11 @@ class ApiOauthValidation
         $response = Http::withHeaders([
             'Accept' => 'application/json',
             'Authorization' => "Bearer $token"
-        ])->timeout(3)->get(config('services.auth_api.validate_url'));
+        ])->timeout(3)->get(config('services.api_oauth.validate_url'));
+
+        if ($response->status() != 200) {
+            return response()->json(['error' => 'Invalid token'], 401);
+        }
 
         if ($response->failed()) {
             return response()->json(['error' => 'Invalid token'], 401);

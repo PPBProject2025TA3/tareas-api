@@ -66,6 +66,7 @@ class TareaController extends Controller
             $tarea = Tarea::create([
                 'titulo' => $request->titulo,
                 'descripcion' => $request->descripcion,
+                'cuerpo' => $request->descripcion,
                 'autor_id' => $request->autor_id,
                 'fecha_inicio' => $request->fecha_inicio,
                 'fecha_vencimiento' => $request->fecha_vencimiento,
@@ -73,9 +74,9 @@ class TareaController extends Controller
             ]);
 
             $this->sincronizarRelaciones($tarea, $request);
-            $this->enviarAHistorial($tarea);
+            #$this->enviarAHistorial($tarea);
             
-            Cache::tags('tareas')->flush();
+            Cache::flush();
             
             return response()->json($tarea->load(['categorias', 'asignados']), 201);
         });
@@ -100,7 +101,7 @@ class TareaController extends Controller
 
             $this->sincronizarRelaciones($tarea, $request);
             
-            Cache::tags('tareas')->flush();
+            Cache::forget('tareas');
             Cache::forget('tarea_'.$tarea->id);
             
             return response()->json($tarea->load(['categorias', 'asignados']));
@@ -117,7 +118,8 @@ class TareaController extends Controller
             $tarea->asignados()->detach(); 
             $tarea->delete();
             
-            Cache::tags('tareas')->flush();
+            Cache::forget('tareas');
+
             
             return response()->json(['eliminado' => true]);
         });
@@ -168,14 +170,15 @@ class TareaController extends Controller
         }
     }
 
-    private function enviarAHistorial(Tarea $tarea)
+/*    private function enviarAHistorial(Tarea $tarea)
     {
         Http::withHeaders([
             'Accept' => 'application/json'
-        ])->post(config('services.historial.url'), [
+        ])->post(config('services.api_history.url'), [
             'tarea_id' => $tarea->id,
             'accion' => 'creada',
             'detalles' => $tarea->only(['titulo', 'estado', 'autor_id'])
         ]);
     }
+*/
 }

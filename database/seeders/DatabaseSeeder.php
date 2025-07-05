@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             CategoriaSeeder::class,
             TareaSeeder::class,
             ComentarioSeeder::class,
+            UserTableSeeder::class
         ]);
     }
 }
