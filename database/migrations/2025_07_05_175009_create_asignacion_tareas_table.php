@@ -9,26 +9,22 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-
     public function up()
     {
-        Schema::create('comentarios', function (Blueprint $table) {
+        Schema::create('asignacion_tareas', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('tarea_id');
-            $table->unsignedBigInteger('usuario_id'); 
-            $table->text('contenido');
-            $table->dateTime('fecha_creacion')->useCurrent();
+            $table->foreignId('tarea_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->dateTime('fecha_asignacion')->useCurrent();
             $table->timestamps();
-
-            $table->index('tarea_id');
         });
-    }
+}
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('comentarios');
+        Schema::dropIfExists('asignacion_tareas');
     }
 };

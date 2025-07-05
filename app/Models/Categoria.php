@@ -9,7 +9,6 @@ class Categoria extends Model
 {
     protected $fillable = ['nombre'];
 
-
     public function tareas(): BelongsToMany
     {
         return $this->belongsToMany(Tarea::class, 'categoria_tarea');
