@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  tareas-api:
+    build:
+      context: .
+    container_name: tareas-api
+    ports:
+      - "8001:8001"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - sqlserver-tareas
+    environment:
+      DB_CONNECTION: sqlsrv
+      DB_HOST: sqlserver-tareas
+      DB_PORT: 1433
+      DB_DATABASE: tareas_db
+      DB_USERNAME: sa
+      DB_PASSWORD: P4ssw0rd!
+      AUTH_API_URL: http://auth-api:8000
+    command: >
+      sh -c "sleep 10 &&
+             php artisan migrate --force &&
+             php artisan serve --host=0.0.0.0 --port=8001"
+
+  sqlserver-tareas:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver-tareas
+    ports:
+      - "1434:1433"
+    environment:
+      SA_PASSWORD: "P4ssw0rd!"
+      ACCEPT_EULA: "Y"
+    volumes:
+      - sqlserver_tareas_data:/var/opt/mssql
+
+volumes:
+  sqlserver_tareas_data:

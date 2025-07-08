@@ -74,7 +74,7 @@ class TareaController extends Controller
             ]);
 
             $this->sincronizarRelaciones($tarea, $request);
-            #$this->enviarAHistorial($tarea);
+            $this->enviarAHistorial($tarea, 'creacion');
             
             Cache::flush();
             
@@ -100,6 +100,7 @@ class TareaController extends Controller
             ]);
 
             $this->sincronizarRelaciones($tarea, $request);
+            $this->enviarAHistorial($tarea, 'actualizacion');
             
             Cache::forget('tareas');
             Cache::forget('tarea_'.$tarea->id);
@@ -117,10 +118,11 @@ class TareaController extends Controller
             $tarea->comentarios()->delete();
             $tarea->asignados()->detach(); 
             $tarea->delete();
+
+            $this->enviarAHistorial($tarea, 'eliminacion');
             
             Cache::forget('tareas');
 
-            
             return response()->json(['eliminado' => true]);
         });
     }
@@ -170,15 +172,41 @@ class TareaController extends Controller
         }
     }
 
-/*    private function enviarAHistorial(Tarea $tarea)
+   private function enviarAHistorial(Tarea $tarea, string $accion)
     {
-        Http::withHeaders([
-            'Accept' => 'application/json'
-        ])->post(config('services.api_history.url'), [
-            'tarea_id' => $tarea->id,
-            'accion' => 'creada',
-            'detalles' => $tarea->only(['titulo', 'estado', 'autor_id'])
-        ]);
+        try {
+            $url = config('services.api_history.url');
+
+            \Log::debug("Enviando datos a historial", [
+                'url' => $url,
+                'datos' => [
+                    'tarea_id' => $tarea->id,
+                    'titulo' => $tarea->titulo,
+                    'estado_actual' => $tarea->estado,
+                    'usuario_creador_id' => (int) $tarea->autor_id,
+                    'fecha_hora' => now()->toDateTimeString(),
+                    'accion' => $accion,
+                ]
+            ]);
+
+            $response = Http::timeout(10)->post($url, [
+                'tarea_id' => $tarea->id,
+                'titulo' => $tarea->titulo,
+                'estado_actual' => $tarea->estado,
+                'usuario_creador_id' => (int) $tarea->autor_id,
+                'fecha_hora' => now()->toDateTimeString(),
+                'accion' => $accion,
+            ]);
+
+            \Log::debug('Respuesta historial-api', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error("Error enviando a historial: " . $e->getMessage());
+        }
     }
-*/
+
+
 }
